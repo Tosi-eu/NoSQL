@@ -1,5 +1,9 @@
 package scc0241.project.neo4j;
 
+import java.awt.Desktop;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
@@ -7,6 +11,7 @@ import org.neo4j.driver.Session;
 import org.neo4j.driver.exceptions.ServiceUnavailableException;
 
 import java.util.Scanner;
+import org.neo4j.driver.SessionConfig;
 
 public class Neo4j {
     private final Driver driver;
@@ -30,9 +35,9 @@ public class Neo4j {
             if (!userExists) {
                 String query = "CREATE (u:User {name: $name, amigos: 0, comments: 0, posts: 0}) RETURN u";
                 session.run(query, org.neo4j.driver.Values.parameters("name", username));
-                System.out.println("Usuário adicionado: " + username);
+                System.out.println("Usuario adicionado: " + username);
             } else {
-                System.out.println("Erro: O usuário " + username + " já existe.");
+                System.out.println("Erro: O usuario " + username + " ja existe.");
             }
         }
     }
@@ -52,7 +57,7 @@ public class Neo4j {
                 session.run(query, org.neo4j.driver.Values.parameters("user1", user1, "user2", user2));
                 System.out.println("Amizade adicionada entre " + user1 + " e " + user2);
             } else {
-                System.out.println("Erro: Um ou ambos os usuários não existem.");
+                System.out.println("Erro: Um ou ambos os usuarios nao existem.");
             }
         }
     }
@@ -82,7 +87,7 @@ public class Neo4j {
                 session.run(query, org.neo4j.driver.Values.parameters("username", username, "content", content));
                 System.out.println("Post adicionado por " + username + ": " + content);
             } else {
-                System.out.println("Erro: O usuário não existe.");
+                System.out.println("Erro: O usuario nao existe.");
             }
         }
     }
@@ -117,16 +122,16 @@ public void removePost(String username, String content) {
                 tx.run(deletePostQuery, org.neo4j.driver.Values.parameters("username", username, "content", content));
 
                 tx.commit();
-                System.out.println("Post e seus comentários removidos de " + username + ": " + content);
+                System.out.println("Post e seus comentarios removidos de " + username + ": " + content);
             } catch (Exception e) {
                 throw e;
             }
         } else {
             if (!userExists) {
-                System.out.println("Erro: O usuário " + username + " não existe.");
+                System.out.println("Erro: O usuario " + username + " nao existe.");
             }
             if (!postExists) {
-                System.out.println("Erro: O post com conteúdo \"" + content + "\" não existe.");
+                System.out.println("Erro: O post com conteúdo \"" + content + "\" nao existe.");
             }
         }
     }
@@ -142,7 +147,7 @@ public void removePost(String username, String content) {
                                     .asBoolean();
         
         if (!userExists) {
-            System.out.println("Erro: O usuário " + username + " não existe.");
+            System.out.println("Erro: O usuario " + username + " nao existe.");
             return;
         }
 
@@ -153,7 +158,7 @@ public void removePost(String username, String content) {
                                     .asBoolean();
 
         if (!contentExists) {
-            System.out.println("Erro: O post " + oldContent + " não existe.");
+            System.out.println("Erro: O post " + oldContent + " nao existe.");
             return;
         }
         
@@ -175,7 +180,7 @@ public void editComment(String username, String oldContent, String newContent) {
                                     .asBoolean();
 
         if (!userExists) {
-            System.out.println("Erro: O usuário " + username + " não existe.");
+            System.out.println("Erro: O usuario " + username + " nao existe.");
             return;
         }
 
@@ -186,16 +191,16 @@ public void editComment(String username, String oldContent, String newContent) {
                                        .asBoolean();
 
         if (!commentExists) {
-            System.out.println("Erro: O comentário \"" + oldContent + "\" não existe.");
+            System.out.println("Erro: O comentario \"" + oldContent + "\" nao existe.");
             return;
         }
 
         String query = "MATCH (u:User {name: $username})-[r:COMMENTED]->(c:Comment {content: $oldContent}) " +
                        "SET c.content = $newContent";
         session.run(query, org.neo4j.driver.Values.parameters("username", username, "oldContent", oldContent, "newContent", newContent));
-        System.out.println("Comentário editado de " + username + ": " + oldContent + " -> " + newContent);
+        System.out.println("Comentario editado de " + username + ": " + oldContent + " -> " + newContent);
     } catch (Exception e) {
-        System.out.println("Erro ao editar o comentário: " + e.getMessage());
+        System.out.println("Erro ao editar o comentario: " + e.getMessage());
     }
 }
 
@@ -221,12 +226,12 @@ public void editComment(String username, String oldContent, String newContent) {
                                              "(c)-[:ON_POST]->(p)" +
                                              "MATCH (commenter) SET commenter.comments = commenter.comments + 1";
                     session.run(addCommentQuery, org.neo4j.driver.Values.parameters("commenter", commenter, "postContent", postContent, "commentContent", commentContent));
-                    System.out.println("Comentário adicionado por " + commenter + " no post de " + postOwner);
+                    System.out.println("Comentario adicionado por " + commenter + " no post de " + postOwner);
                 } else {
-                    System.out.println("Erro: O post com o conteúdo \"" + postContent + "\" não existe.");
+                    System.out.println("Erro: O post com o conteúdo \"" + postContent + "\" nao existe.");
                 }
             } else {
-                System.out.println("Erro: Um ou ambos os usuários não existem.");
+                System.out.println("Erro: Um ou ambos os usuarios nao existem.");
             }
         }
     }
@@ -267,12 +272,65 @@ public void editComment(String username, String oldContent, String newContent) {
                 System.out.println("Usuario e todos os relacionamentos e nodes associados foram removidos: " + username);
             }
         } else {
-            System.out.println("Erro: O usuário nao existe.");
+            System.out.println("Erro: O usuario nao existe.");
         }
     }
 }
+ 
+   public void openNeo4jBrowser() {
+        String url = "http://localhost:7474/browser/";
+        
+        if (Desktop.isDesktopSupported()) {
+            try {
+                Desktop.getDesktop().browse(new URI(url));
+                System.out.println("Neo4j Browser aberto!");
+            } catch (IOException | URISyntaxException e) {
+                System.out.println("Erro ao tentar abrir o Neo4j Browser: " + e.getMessage());
+            }
+        } else {
+            System.out.println("Desktop nao suportado. Nao foi possivel abrir o navegador.");
+        }
+    }
 
-   public static void main(String... args) {
+      public void verifyGraph() {
+        System.out.println("===== Relatorio de Verificacao do Grafo =====");
+
+        try (Session session = driver.session(SessionConfig.forDatabase("socialnetwork"))) {
+
+            String nodeCountQuery = "MATCH (n) RETURN count(n) AS nodeCount";
+            int nodeCount = session.run(nodeCountQuery).single().get("nodeCount").asInt();
+            System.out.println("Total de nodes: " + nodeCount);
+
+            String friendshipCountQuery = "MATCH (:User)-[r:FRIENDS_WITH]->(:User) RETURN count(r) AS friendshipCount";
+            int friendshipCount = session.run(friendshipCountQuery).single().get("friendshipCount").asInt();
+            System.out.println("Total de amizades: " + friendshipCount);
+
+            String postsQuery = "MATCH (u:User)-[:POSTED]->(p:Post) RETURN u.name AS username, p.content AS postContent";
+            var postsResult = session.run(postsQuery);
+            System.out.println("\nPosts realizados:");
+            postsResult.list().forEach(record ->
+                System.out.println(" - Usuario: " + record.get("username").asString() +
+                                   " | Postagem: " + record.get("postContent").asString()));
+
+         String commentsQuery = "MATCH (u:User)-[:COMMENTED]->(c:Comment)-[:ON_POST]->(p:Post) " +
+                                "WHERE u.name IS NOT NULL AND c.content IS NOT NULL AND p.content IS NOT NULL "  +
+                                "RETURN u.name AS user, c.content AS comment, p.content AS post " +
+                                "ORDER BY user";
+
+
+            var commentsResult = session.run(commentsQuery);
+            System.out.println("\nComentarios realizados:");
+            commentsResult.list().forEach(record ->
+                System.out.println(" - Usuario: " + record.get("user").asString() +
+                                   " | Comentario: " + record.get("comment").asString() +
+                                   " | No post: " + record.get("post").asString()));
+
+        } catch (Exception e) {
+            System.out.println("Erro ao gerar o relatorio do grafo: " + e.getMessage());
+        }
+    }
+      
+    public static void main(String... args) {
         final String dbUri = "neo4j://localhost:7687";
         final String dbUser = "neo4j";
         final String dbPassword = "neo4j_Eu12";
@@ -293,10 +351,12 @@ public void editComment(String username, String oldContent, String newContent) {
                 System.out.println("7. Adicionar Comentario");
                 System.out.println("8. Editar Comentario");
                 System.out.println("9. Remover Usuario");
-                System.out.println("10. Sair");
+                System.out.println("10. Abrir Neo4j Browser");
+                System.out.println("11. Verificar Estrutura do Grafo");
+                System.out.println("12. Sair");
                 System.out.print("Escolha uma opcao: ");
                 int choice = scanner.nextInt();
-                scanner.nextLine(); 
+                scanner.nextLine();
 
                 switch (choice) {
                     case 1 -> {
@@ -305,35 +365,35 @@ public void editComment(String username, String oldContent, String newContent) {
                         socialNetwork.addUser(username);
                     }
                     case 2 -> {
-                        System.out.print("Digite o nome do primeiro usuário: ");
+                        System.out.print("Digite o nome do primeiro usuario: ");
                         String user1 = scanner.nextLine();
-                        System.out.print("Digite o nome do segundo usuário: ");
+                        System.out.print("Digite o nome do segundo usuario: ");
                         String user2 = scanner.nextLine();
                         socialNetwork.addFriendship(user1, user2);
                     }
                     case 3 -> {
-                        System.out.print("Digite o nome do primeiro usuário: ");
+                        System.out.print("Digite o nome do primeiro usuario: ");
                         String user1ToRemove = scanner.nextLine();
-                        System.out.print("Digite o nome do segundo usuário: ");
+                        System.out.print("Digite o nome do segundo usuario: ");
                         String user2ToRemove = scanner.nextLine();
                         socialNetwork.deleteFriendship(user1ToRemove, user2ToRemove);
                     }
                     case 4 -> {
-                        System.out.print("Digite o nome do usuário: ");
+                        System.out.print("Digite o nome do usuario: ");
                         String postUser = scanner.nextLine();
                         System.out.print("Digite o conteúdo do post: ");
                         String postContent = scanner.nextLine();
                         socialNetwork.addPost(postUser, postContent);
                     }
                     case 5 -> {
-                        System.out.print("Digite o nome do usuário: ");
+                        System.out.print("Digite o nome do usuario: ");
                         String removePostUser = scanner.nextLine();
                         System.out.print("Digite o conteúdo do post a ser removido: ");
                         String removePostContent = scanner.nextLine();
                         socialNetwork.removePost(removePostUser, removePostContent);
                     }
                     case 6 -> {
-                        System.out.print("Digite o nome do usuário: ");
+                        System.out.print("Digite o nome do usuario: ");
                         String editPostUser = scanner.nextLine();
                         System.out.print("Digite o conteúdo antigo do post: ");
                         String oldPostContent = scanner.nextLine();
@@ -344,16 +404,16 @@ public void editComment(String username, String oldContent, String newContent) {
                     case 7 -> {
                         System.out.print("Digite o nome do dono do post: ");
                         String postOwner = scanner.nextLine();
-                        System.out.print("Digite o nome do usuário que está comentando: ");
+                        System.out.print("Digite o nome do usuario que esta comentando: ");
                         String commenter = scanner.nextLine();
                         System.out.print("Digite o conteúdo do post: ");
                         String postContent = scanner.nextLine();
-                        System.out.print("Digite o conteúdo do comentário: ");
+                        System.out.print("Digite o conteúdo do comentario: ");
                         String commentContent = scanner.nextLine();
                         socialNetwork.adicionarComentario(postOwner, commenter, postContent, commentContent);
                     }
                     case 8 -> {
-                        System.out.print("Digite o nome do usuário que comentou: ");
+                        System.out.print("Digite o nome do usuario que comentou: ");
                         String userToEditComment = scanner.nextLine();
                         System.out.print("Comentario anterior: ");
                         String oldCommentContent = scanner.nextLine();
@@ -362,14 +422,15 @@ public void editComment(String username, String oldContent, String newContent) {
                         socialNetwork.editComment(userToEditComment, oldCommentContent, newCommentContent);
                     }
                     case 9 -> {
-                    System.out.print("Digite o nome do usuário a ser removido: ");
-                    String userToDelete = scanner.nextLine();
-                    socialNetwork.deleteUser(userToDelete);
+                        System.out.print("Digite o nome do usuario a ser removido: ");
+                        String userToDelete = scanner.nextLine();
+                        socialNetwork.deleteUser(userToDelete);
                     }
-                    case 10 -> running = false;
-                    default -> System.out.println("Opção inválida. Tente novamente.");
+                    case 10 -> socialNetwork.openNeo4jBrowser();
+                    case 11 -> socialNetwork.verifyGraph();
+                    case 12 -> running = false;
+                    default -> System.out.println("Opcao invalida. Tente novamente.");
                 }
-                
             }
 
             socialNetwork.close();
