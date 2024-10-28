@@ -52,8 +52,7 @@ public class Neo4j {
 
             if (usersExist) {
                 String query = "MATCH (u1:User {name: $user1}), (u2:User {name: $user2}) " +
-                               "CREATE (u1)-[:FRIEND]->(u2) " +
-                               "SET u1.amigos = u1.amigos + 1, u2.amigos = u2.amigos + 1";
+                               "CREATE (u1)-[:FRIEND]->(u2) ";
                 session.run(query, org.neo4j.driver.Values.parameters("user1", user1, "user2", user2));
                 System.out.println("Amizade adicionada entre " + user1 + " e " + user2);
             } else {
@@ -65,8 +64,7 @@ public class Neo4j {
     public void deleteFriendship(String user1, String user2) {
         try (Session session = driver.session(org.neo4j.driver.SessionConfig.forDatabase("socialnetwork")))  {
             String query = "MATCH (u1:User {name: $user1})-[r:FRIEND]->(u2:User {name: $user2}) " +
-                           "DELETE r " +
-                           "SET u1.amigos = u1.amigos - 1, u2.amigos = u2.amigos - 1";
+                           "DELETE r ";
             session.run(query, org.neo4j.driver.Values.parameters("user1", user1, "user2", user2));
             System.out.println("Amizade removida entre " + user1 + " e " + user2);
         }
@@ -82,8 +80,7 @@ public class Neo4j {
 
             if (userExists) {
                 String query = "MATCH (u:User {name: $username}) " +
-                               "CREATE (u)-[:POSTED]->(p:Post {content: $content}) RETURN p" +
-                               "SET u.posts = u.posts + 1 RETURN p";
+                               "CREATE (u)-[:POSTED]->(p:Post {content: $content}) ";
                 session.run(query, org.neo4j.driver.Values.parameters("username", username, "content", content));
                 System.out.println("Post adicionado por " + username + ": " + content);
             } else {
@@ -117,8 +114,7 @@ public void removePost(String username, String content) {
 
                 String deletePostQuery = 
                     "MATCH (u:User {name: $username})-[r:POSTED]->(p:Post {content: $content}) " +
-                    "DETACH DELETE p " +
-                    "SET u.posts = u.posts - 1";
+                    "DETACH DELETE p " ;
                 tx.run(deletePostQuery, org.neo4j.driver.Values.parameters("username", username, "content", content));
 
                 tx.commit();
@@ -224,6 +220,7 @@ public void editComment(String username, String oldContent, String newContent) {
                     String addCommentQuery = "MATCH (commenter:User {name: $commenter}), (p:Post {content: $postContent}) " +
                                              "CREATE (commenter)-[:COMMENTED]->(c:Comment {content: $commentContent}), " +
                                              "(c)-[:ON_POST]->(p)" +
+                                             "WITH commenter " +
                                              "MATCH (commenter) SET commenter.comments = commenter.comments + 1";
                     session.run(addCommentQuery, org.neo4j.driver.Values.parameters("commenter", commenter, "postContent", postContent, "commentContent", commentContent));
                     System.out.println("Comentario adicionado por " + commenter + " no post de " + postOwner);
@@ -245,8 +242,7 @@ public void editComment(String username, String oldContent, String newContent) {
             try (var tx = session.beginTransaction()) {
                 String deleteUserCommentsQuery = 
                     "MATCH (u:User {name: $username})-[r:COMMENTED]->(c:Comment) " +
-                    "DETACH DELETE c " +
-                    "MATCH (u) SET u.comments = u.comments - 1";
+                    "DETACH DELETE c ";
 
                 tx.run(deleteUserCommentsQuery, org.neo4j.driver.Values.parameters("username", username));
 
@@ -352,7 +348,7 @@ public void editComment(String username, String oldContent, String newContent) {
                 System.out.println("8. Editar Comentario");
                 System.out.println("9. Remover Usuario");
                 System.out.println("10. Abrir Neo4j Browser");
-                System.out.println("11. Verificar Estrutura do Grafo");
+                System.out.println("11. Gerar relatorio do Grafo");
                 System.out.println("12. Sair");
                 System.out.print("Escolha uma opcao: ");
                 int choice = scanner.nextInt();
