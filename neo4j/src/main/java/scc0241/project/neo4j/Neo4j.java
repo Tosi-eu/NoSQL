@@ -12,6 +12,8 @@ import org.neo4j.driver.exceptions.ServiceUnavailableException;
 
 import java.util.Scanner;
 import org.neo4j.driver.SessionConfig;
+import org.neo4j.driver.exceptions.ClientException;
+import org.neo4j.driver.exceptions.Neo4jException;
 
 public class Neo4j {
     private final Driver driver;
@@ -24,23 +26,29 @@ public class Neo4j {
         driver.close();
     }
 
-    public void addUser(String username) {
-        try (Session session = driver.session(org.neo4j.driver.SessionConfig.forDatabase("socialnetwork")))  {
-            String checkUserQuery = "MATCH (u:User {name: $name}) RETURN COUNT(u) > 0 AS exists";
-            boolean userExists = session.run(checkUserQuery, org.neo4j.driver.Values.parameters("name", username))
-                                        .single()
-                                        .get("exists")
-                                        .asBoolean();
+public void addUser(String username) {
+    try (Session session = driver.session(org.neo4j.driver.SessionConfig.forDatabase("socialnetwork"))) {
+        String checkUserQuery = "MATCH (u:User {name: $name}) RETURN COUNT(u) > 0 AS exists";
+        boolean userExists = session.run(checkUserQuery, org.neo4j.driver.Values.parameters("name", username))
+                                    .single()
+                                    .get("exists")
+                                    .asBoolean();
 
-            if (!userExists) {
-                String query = "CREATE (u:User {name: $name, amigos: 0, comments: 0, posts: 0}) RETURN u";
-                session.run(query, org.neo4j.driver.Values.parameters("name", username));
-                System.out.println("Usuario adicionado: " + username);
-            } else {
-                System.out.println("Erro: O usuario " + username + " ja existe.");
-            }
+        if (!userExists) {
+            String query = "CREATE (u:User {name: $name, amigos: 0, comments: 0, posts: 0}) RETURN u";
+            session.run(query, org.neo4j.driver.Values.parameters("name", username));
+            System.out.println("Usuario adicionado: " + username);
+        } else {
+            System.out.println("Erro: O usuario " + username + " ja existe.");
+        }
+    } catch (Neo4jException e) {
+        if (e.code().equals("Neo.ClientError.Schema.ConstraintValidationFailed")) {
+            System.out.println("Erro: O usuario " + username + " ja existe (capturado pela exceção).");
+        } else {
+            e.printStackTrace();
         }
     }
+}
 
     public void addFriendship(String user1, String user2) {
         try (Session session = driver.session(org.neo4j.driver.SessionConfig.forDatabase("socialnetwork")))  {
