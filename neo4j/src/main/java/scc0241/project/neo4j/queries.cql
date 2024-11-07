@@ -44,4 +44,8 @@ MATCH(N:User{name:'Eva'})-[:COMMENTED]->(comments) RETURN N, comments
 MATCH (follower:User)-[:FRIEND]->(p:User {name: "Eva"})
 RETURN follower AS Seguidor;
 
+#encontrar amigos de amigos
+MATCH (u:User {name: 'Ana'})-[:FRIEND]->()-[:FRIEND]->(fof)
+WHERE u <> fof
+RETURN DISTINCT fof AS FriendOfFriend
 
